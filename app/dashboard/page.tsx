@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { DeletePostButton } from "@/components/delete-post-button";
 import prisma from "@/lib/prisma";
 import { formatPostDate, getInitials } from "@/lib/social";
 import { requireServerSession } from "@/lib/session";
@@ -47,9 +48,12 @@ export default async function DashboardPage() {
                   <p className="truncate text-sm font-semibold text-white">{post.author.name}</p>
                   <p className="truncate text-xs text-[var(--text-muted)]">{post.author.email}</p>
                 </div>
-                <p className="text-right text-[11px] leading-5 text-[var(--text-muted)]">
-                  {formatPostDate(post.createdAt)}
-                </p>
+                <div className="flex flex-col items-end gap-2">
+                  <p className="text-right text-[11px] leading-5 text-[var(--text-muted)]">
+                    {formatPostDate(post.createdAt)}
+                  </p>
+                  <DeletePostButton postId={post.id} />
+                </div>
               </div>
 
               {post.imageUrl ? (
