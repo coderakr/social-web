@@ -6,7 +6,7 @@ export default async function SignInPage() {
   const session = await getServerSession();
 
   if (session?.user) {
-    redirect("/dashboard");
+    redirect("/home");
   }
 
   return <AuthForm mode="sign-in" />;

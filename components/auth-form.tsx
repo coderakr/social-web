@@ -44,7 +44,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       }
 
       shouldStopLoading = false;
-      window.location.href = "/dashboard";
+      window.location.href = "/home";
     } finally {
       if (shouldStopLoading) {
         stopLoading();
