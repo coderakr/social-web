@@ -120,7 +120,7 @@ export function NetworkOverview({
           <LoadingLink
             href={resetHref}
             className="text-sm font-medium text-white"
-            loadingMessage="Refreshing network..."
+            loadingMessage="Refreshing friends..."
           >
             Reset
           </LoadingLink>

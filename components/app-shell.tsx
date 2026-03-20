@@ -6,7 +6,7 @@ import { getInitials } from "@/lib/social";
 import { useState } from "react";
 
 type AppShellProps = {
-  active: "dashboard" | "create" | "network";
+  active: "home" | "create" | "network";
   title: string;
   subtitle: string;
   user: {
@@ -17,9 +17,9 @@ type AppShellProps = {
 };
 
 const navItems = [
-  { key: "dashboard", href: "/dashboard", label: "Dashboard" },
+  { key: "home", href: "/home", label: "Home" },
   { key: "create", href: "/create", label: "Create Post" },
-  { key: "network", href: "/network", label: "Network" },
+  { key: "network", href: "/network", label: "Friends" },
 ] as const;
 
 export function AppShell({
@@ -54,10 +54,10 @@ export function AppShell({
         >
           <div className="flex items-center justify-between">
             <LoadingLink
-              href="/dashboard"
+              href="/home"
               className="flex items-center gap-3"
               onClick={closeSidebar}
-              loadingMessage="Opening dashboard..."
+              loadingMessage="Opening home..."
             >
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-sm font-bold text-white">
                 SW

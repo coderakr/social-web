@@ -98,7 +98,7 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
   return (
     <AppShell
       active="network"
-      title="Network"
+      title="Friends"
       subtitle="Manage friends, accept requests, and discover people to add."
       user={session.user}
     >
