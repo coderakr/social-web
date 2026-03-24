@@ -6,12 +6,13 @@ import { getInitials } from "@/lib/social";
 import { useState } from "react";
 
 type AppShellProps = {
-  active: "home" | "create" | "network";
+  active: "home" | "create" | "network" | "profile";
   title: string;
   subtitle: string;
   user: {
     name: string;
     email: string;
+    image?: string | null;
   };
   children: React.ReactNode;
 };
@@ -54,6 +55,18 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    key: "profile",
+    href: "/profile",
+    label: "Profile",
+    description: "Your details",
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <circle cx="12" cy="8" r="3.5" />
+        <path d="M5 20a7 7 0 0 1 14 0" strokeLinecap="round" />
+      </svg>
+    ),
+  },
 ] as const;
 
 export function AppShell({
@@ -68,6 +81,17 @@ export function AppShell({
   function closeSidebar() {
     setIsSidebarOpen(false);
   }
+
+  const avatarContent = user.image ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={user.image}
+      alt={user.name}
+      className="h-full w-full rounded-full object-cover"
+    />
+  ) : (
+    getInitials(user.name)
+  );
 
   return (
     <main className="shell min-h-screen">
@@ -114,7 +138,7 @@ export function AppShell({
 
           <div className="mt-4 rounded-[1.55rem] border border-[rgba(104,173,255,0.12)] bg-[linear-gradient(160deg,rgba(18,28,43,0.96),rgba(10,16,27,0.96))] p-4">
             <div className="flex items-center gap-3">
-              <div className="avatar-chip shrink-0">{getInitials(user.name)}</div>
+              <div className="avatar-chip shrink-0 overflow-hidden">{avatarContent}</div>
               <div className="min-w-0">
                 <p className="truncate text-base font-semibold text-white">{user.name}</p>
                 <p className="truncate text-sm text-[var(--accent-blue)]">{user.email}</p>

@@ -39,9 +39,17 @@ export function NetworkOverview({
     <div className={`w-full space-y-4 md:space-y-5 ${className}`}>
       <section className="sidebar-card rounded-[1.5rem] p-4 sm:p-5">
         <div className="flex items-center gap-3">
-          <div className="avatar-chip shrink-0">{getInitials(currentUser.name)}</div>
+          <LoadingLink href="/profile" className="avatar-chip shrink-0" loadingMessage="Opening profile...">
+            {getInitials(currentUser.name)}
+          </LoadingLink>
           <div className="min-w-0">
-            <p className="truncate text-base font-semibold text-white">{currentUser.name}</p>
+            <LoadingLink
+              href="/profile"
+              className="truncate text-base font-semibold text-white transition-colors hover:text-[var(--accent-blue)]"
+              loadingMessage="Opening profile..."
+            >
+              {currentUser.name}
+            </LoadingLink>
             <p className="truncate text-sm text-[var(--accent-blue)]">{currentUser.email}</p>
           </div>
         </div>
@@ -58,9 +66,21 @@ export function NetworkOverview({
           ) : (
             acceptedConnections.slice(0, 8).map((friend) => (
               <div key={friend.id} className="flex items-center gap-3 rounded-2xl">
-                <div className="avatar-chip h-11 w-11 shrink-0 text-sm">{getInitials(friend.name)}</div>
+                <LoadingLink
+                  href={`/profile/${friend.id}`}
+                  className="avatar-chip h-11 w-11 shrink-0 text-sm"
+                  loadingMessage={`Opening ${friend.name.toLowerCase()}'s profile...`}
+                >
+                  {getInitials(friend.name)}
+                </LoadingLink>
                 <div className="min-w-0">
-                  <p className="truncate text-base font-medium text-white">{friend.name}</p>
+                  <LoadingLink
+                    href={`/profile/${friend.id}`}
+                    className="truncate text-base font-medium text-white transition-colors hover:text-[var(--accent-blue)]"
+                    loadingMessage={`Opening ${friend.name.toLowerCase()}'s profile...`}
+                  >
+                    {friend.name}
+                  </LoadingLink>
                   <p className="truncate text-sm text-[var(--text-muted)]">{friend.email}</p>
                 </div>
               </div>

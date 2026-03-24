@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/app-shell";
 import { CommentsSection } from "@/components/comments-section";
 import { DeletePostButton } from "@/components/delete-post-button";
+import { LoadingLink } from "@/components/loading-link";
 import { getVisibleAuthorIds } from "@/lib/post-visibility";
 import prisma from "@/lib/prisma";
 import { formatPostDate, getInitials } from "@/lib/social";
@@ -77,10 +78,22 @@ export default async function HomePage() {
                     <div className="pl-3 md:pl-4">
                       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                         <div className="flex items-start gap-3">
-                          <div className="avatar-chip mt-0.5 shrink-0">{getInitials(post.author.name)}</div>
+                          <LoadingLink
+                            href={isOwnPost ? "/profile" : `/profile/${post.author.id}`}
+                            loadingMessage={`Opening ${post.author.name.toLowerCase()}'s profile...`}
+                            className="avatar-chip mt-0.5 shrink-0"
+                          >
+                            {getInitials(post.author.name)}
+                          </LoadingLink>
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
-                              <p className="text-base font-semibold text-white">{post.author.name}</p>
+                              <LoadingLink
+                                href={isOwnPost ? "/profile" : `/profile/${post.author.id}`}
+                                loadingMessage={`Opening ${post.author.name.toLowerCase()}'s profile...`}
+                                className="text-base font-semibold text-white transition-colors hover:text-[var(--accent-blue)]"
+                              >
+                                {post.author.name}
+                              </LoadingLink>
                               <span
                                 className={`inline-flex rounded-full px-2.5 py-1 text-[0.66rem] font-semibold uppercase tracking-[0.14em] ${
                                   isOwnPost
