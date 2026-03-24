@@ -2,10 +2,12 @@ import { AppShell } from "@/components/app-shell";
 import { CommentsSection } from "@/components/comments-section";
 import { DeletePostButton } from "@/components/delete-post-button";
 import { LoadingLink } from "@/components/loading-link";
+import { getPostReactionSummary } from "@/lib/post-reactions";
 import { getVisibleAuthorIds } from "@/lib/post-visibility";
 import prisma from "@/lib/prisma";
 import { formatPostDate, getInitials } from "@/lib/social";
 import { requireServerSession } from "@/lib/session";
+import { PostReactionButtons } from "@/components/post-reaction-buttons";
 
 export default async function HomePage() {
   const session = await requireServerSession();
@@ -35,6 +37,10 @@ export default async function HomePage() {
       createdAt: "desc",
     },
   });
+  const reactionSummary = await getPostReactionSummary(
+    posts.map((post) => post.id),
+    session.user.id,
+  );
   return (
     <AppShell
       active="home"
@@ -54,6 +60,11 @@ export default async function HomePage() {
             ) : (
               posts.map((post, index) => {
                 const isOwnPost = post.authorId === session.user.id;
+                const postReaction = reactionSummary.get(post.id) ?? {
+                  likes: 0,
+                  dislikes: 0,
+                  currentReaction: null,
+                };
 
                 return (
                   <article
@@ -140,7 +151,17 @@ export default async function HomePage() {
                           postId={post.id}
                           currentUserId={session.user.id}
                           initialCommentCount={post._count.comments}
-                          action={isOwnPost ? <DeletePostButton postId={post.id} /> : null}
+                          action={
+                            <div className="flex items-center gap-2">
+                              <PostReactionButtons
+                                postId={post.id}
+                                initialLikes={postReaction.likes}
+                                initialDislikes={postReaction.dislikes}
+                                initialReaction={postReaction.currentReaction}
+                              />
+                              {isOwnPost ? <DeletePostButton postId={post.id} /> : null}
+                            </div>
+                          }
                         />
                       </div>
                     </div>

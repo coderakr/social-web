@@ -1,6 +1,8 @@
 import { AppShell } from "@/components/app-shell";
 import { DeletePostButton } from "@/components/delete-post-button";
+import { PostReactionButtons } from "@/components/post-reaction-buttons";
 import { ProfileEditor } from "@/components/profile-editor";
+import { getPostReactionSummary } from "@/lib/post-reactions";
 import prisma from "@/lib/prisma";
 import { formatPostDate, getInitials } from "@/lib/social";
 import { requireServerSession } from "@/lib/session";
@@ -49,6 +51,10 @@ export default async function ProfilePage() {
       },
     }),
   ]);
+  const reactionSummary = await getPostReactionSummary(
+    posts.map((post) => post.id),
+    session.user.id,
+  );
 
   const photoPostCount = posts.filter((post) => Boolean(post.imageUrl)).length;
 
@@ -100,66 +106,82 @@ export default async function ProfilePage() {
               </div>
             </div>
           ) : (
-            posts.map((post) => (
-              <article
-                key={post.id}
-                className="overflow-hidden rounded-[1.8rem] border border-white/8 bg-[linear-gradient(180deg,rgba(13,20,32,0.98),rgba(10,15,24,0.98))] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.16)] md:p-5"
-              >
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="avatar-chip mt-0.5 shrink-0 overflow-hidden">
-                      {user.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={user.image} alt={user.name} className="h-full w-full object-cover" />
-                      ) : (
-                        getInitials(user.name)
-                      )}
+            posts.map((post) => {
+              const postReaction = reactionSummary.get(post.id) ?? {
+                likes: 0,
+                dislikes: 0,
+                currentReaction: null,
+              };
+
+              return (
+                <article
+                  key={post.id}
+                  className="overflow-hidden rounded-[1.8rem] border border-white/8 bg-[linear-gradient(180deg,rgba(13,20,32,0.98),rgba(10,15,24,0.98))] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.16)] md:p-5"
+                >
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className="avatar-chip mt-0.5 shrink-0 overflow-hidden">
+                        {user.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={user.image} alt={user.name} className="h-full w-full object-cover" />
+                        ) : (
+                          getInitials(user.name)
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-base font-semibold text-white">{user.name}</p>
+                        <p className="mt-1 text-xs text-[var(--text-muted)]">{user.email}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-base font-semibold text-white">{user.name}</p>
-                      <p className="mt-1 text-xs text-[var(--text-muted)]">{user.email}</p>
+
+                    <div className="text-left md:text-right">
+                      <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                        Posted
+                      </p>
+                      <p className="mt-1 text-sm text-white">{formatPostDate(post.createdAt)}</p>
                     </div>
                   </div>
 
-                  <div className="text-left md:text-right">
-                    <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                      Posted
-                    </p>
-                    <p className="mt-1 text-sm text-white">{formatPostDate(post.createdAt)}</p>
+                  <div className="mt-4 rounded-[1.35rem] bg-white/[0.03] p-4 md:p-5">
+                    {post.content ? (
+                      <p className="whitespace-pre-wrap text-[0.97rem] leading-7 text-[#e6edf8]">
+                        {post.content}
+                      </p>
+                    ) : (
+                      <p className="text-sm uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                        Photo post
+                      </p>
+                    )}
                   </div>
-                </div>
 
-                <div className="mt-4 rounded-[1.35rem] bg-white/[0.03] p-4 md:p-5">
-                  {post.content ? (
-                    <p className="whitespace-pre-wrap text-[0.97rem] leading-7 text-[#e6edf8]">
-                      {post.content}
-                    </p>
-                  ) : (
-                    <p className="text-sm uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                      Photo post
-                    </p>
-                  )}
-                </div>
+                  {post.imageUrl ? (
+                    <div className="mt-4">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={post.imageUrl}
+                        alt={`Post by ${user.name}`}
+                        className="max-h-[44rem] w-full rounded-[1.35rem] border border-white/7 object-cover"
+                      />
+                    </div>
+                  ) : null}
 
-                {post.imageUrl ? (
-                  <div className="mt-4">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={post.imageUrl}
-                      alt={`Post by ${user.name}`}
-                      className="max-h-[44rem] w-full rounded-[1.35rem] border border-white/7 object-cover"
-                    />
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <p className="text-sm text-[var(--text-muted)]">
+                      {post.comments.length} {post.comments.length === 1 ? "comment" : "comments"}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <PostReactionButtons
+                        postId={post.id}
+                        initialLikes={postReaction.likes}
+                        initialDislikes={postReaction.dislikes}
+                        initialReaction={postReaction.currentReaction}
+                      />
+                      <DeletePostButton postId={post.id} />
+                    </div>
                   </div>
-                ) : null}
-
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <p className="text-sm text-[var(--text-muted)]">
-                    {post.comments.length} {post.comments.length === 1 ? "comment" : "comments"}
-                  </p>
-                  <DeletePostButton postId={post.id} />
-                </div>
-              </article>
-            ))
+                </article>
+              );
+            })
           )}
         </section>
       </div>

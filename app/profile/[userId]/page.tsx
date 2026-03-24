@@ -1,4 +1,6 @@
 import { AppShell } from "@/components/app-shell";
+import { PostReactionButtons } from "@/components/post-reaction-buttons";
+import { getPostReactionSummary } from "@/lib/post-reactions";
 import { requireServerSession } from "@/lib/session";
 import prisma from "@/lib/prisma";
 import { canUserViewAuthorPosts } from "@/lib/post-visibility";
@@ -75,6 +77,10 @@ export default async function FriendProfilePage({ params }: FriendProfilePagePro
       },
     }),
   ]);
+  const reactionSummary = await getPostReactionSummary(
+    posts.map((post) => post.id),
+    session.user.id,
+  );
 
   if (!user) {
     notFound();
@@ -160,7 +166,14 @@ export default async function FriendProfilePage({ params }: FriendProfilePagePro
               </div>
             </div>
           ) : (
-            posts.map((post) => (
+            posts.map((post) => {
+              const postReaction = reactionSummary.get(post.id) ?? {
+                likes: 0,
+                dislikes: 0,
+                currentReaction: null,
+              };
+
+              return (
               <article
                 key={post.id}
                 className="overflow-hidden rounded-[1.8rem] border border-white/8 bg-[linear-gradient(180deg,rgba(13,20,32,0.98),rgba(10,15,24,0.98))] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.16)] md:p-5"
@@ -213,12 +226,21 @@ export default async function FriendProfilePage({ params }: FriendProfilePagePro
                 ) : null}
 
                 <div className="mt-4">
-                  <p className="text-sm text-[var(--text-muted)]">
-                    {post.comments.length} {post.comments.length === 1 ? "comment" : "comments"}
-                  </p>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm text-[var(--text-muted)]">
+                      {post.comments.length} {post.comments.length === 1 ? "comment" : "comments"}
+                    </p>
+                    <PostReactionButtons
+                      postId={post.id}
+                      initialLikes={postReaction.likes}
+                      initialDislikes={postReaction.dislikes}
+                      initialReaction={postReaction.currentReaction}
+                    />
+                  </div>
                 </div>
               </article>
-            ))
+              );
+            })
           )}
         </section>
       </div>
