@@ -195,8 +195,7 @@ export function AppShell({
 
         <section className="min-w-0 flex-1 lg:pl-0">
           <header className="sticky top-0 z-20 border-b border-white/6 bg-[#0a111b]/88 px-4 py-3 backdrop-blur-xl md:px-6 md:py-3.5 lg:border-b-0 lg:bg-transparent lg:px-8 lg:pt-5 lg:pb-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 aria-label="Open sidebar"
@@ -217,16 +216,6 @@ export function AppShell({
                 <p className="mt-1 hidden max-w-2xl text-sm leading-6 text-[var(--text-muted)] md:block md:text-base">
                   {subtitle}
                 </p>
-              </div>
-              </div>
-
-              <div className="hidden items-center gap-3 lg:flex">
-                <div className="rounded-full border border-white/8 bg-white/[0.03] px-4 py-2">
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                    Signed in as
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-white">{user.name}</p>
-                </div>
               </div>
             </div>
           </header>
