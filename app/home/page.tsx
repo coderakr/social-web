@@ -152,7 +152,7 @@ export default async function HomePage() {
                           currentUserId={session.user.id}
                           initialCommentCount={post._count.comments}
                           action={
-                            <div className="flex items-center gap-2">
+                            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
                               <PostReactionButtons
                                 postId={post.id}
                                 initialLikes={postReaction.likes}

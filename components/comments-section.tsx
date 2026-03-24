@@ -147,11 +147,11 @@ export function CommentsSection({
 
   return (
     <section>
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <button
           type="button"
           onClick={() => setIsOpen((current) => !current)}
-          className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.03] px-3 py-2 text-sm text-[var(--text-muted)] transition-colors hover:text-white"
+          className="inline-flex w-fit items-center gap-2 rounded-full border border-white/8 bg-white/[0.03] px-3 py-2 text-sm text-[var(--text-muted)] transition-colors hover:text-white"
         >
           <svg
             aria-hidden="true"

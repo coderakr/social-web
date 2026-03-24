@@ -165,11 +165,11 @@ export default async function ProfilePage() {
                     </div>
                   ) : null}
 
-                  <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm text-[var(--text-muted)]">
                       {post.comments.length} {post.comments.length === 1 ? "comment" : "comments"}
                     </p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <PostReactionButtons
                         postId={post.id}
                         initialLikes={postReaction.likes}

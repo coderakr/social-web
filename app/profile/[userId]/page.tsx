@@ -226,7 +226,7 @@ export default async function FriendProfilePage({ params }: FriendProfilePagePro
                 ) : null}
 
                 <div className="mt-4">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm text-[var(--text-muted)]">
                       {post.comments.length} {post.comments.length === 1 ? "comment" : "comments"}
                     </p>

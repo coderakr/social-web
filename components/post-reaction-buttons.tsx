@@ -80,8 +80,8 @@ export function PostReactionButtons({
   }
 
   return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col items-start gap-2 sm:items-end">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={() => handleReaction("LIKE")}
@@ -107,7 +107,7 @@ export function PostReactionButtons({
           <span>{dislikes}</span>
         </button>
       </div>
-      {error ? <p className="text-right text-xs text-[var(--error)]">{error}</p> : null}
+      {error ? <p className="text-left text-xs text-[var(--error)] sm:text-right">{error}</p> : null}
     </div>
   );
 }
