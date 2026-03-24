@@ -23,7 +23,6 @@ export default async function HomePage() {
       friendship.requesterId === session.user.id ? friendship.addresseeId : friendship.requesterId,
     ),
   ];
-  const acceptedFriendCount = visibleAuthorIds.length - 1;
 
   const posts = await prisma.post.findMany({
     where: {
@@ -44,141 +43,105 @@ export default async function HomePage() {
       createdAt: "desc",
     },
   });
-
   return (
     <AppShell
       active="home"
       title="Home"
-      subtitle="A cleaner feed for your updates and the people you added."
+      subtitle="Posts from you and your accepted friends, ordered by the latest activity."
       user={session.user}
     >
-      <section className="mx-auto w-full max-w-[760px] space-y-5 md:space-y-6">
-        <div className="overflow-hidden rounded-[1.6rem] border border-white/8 bg-[linear-gradient(135deg,rgba(17,24,39,0.96),rgba(10,17,27,0.98))] shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
-          <div className="border-b border-white/7 px-5 py-5 md:px-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--accent-blue)]">
-                  Your circle
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white md:text-[2rem]">
-                  Posts from people you know
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)] md:text-[0.95rem]">
-                  Your home feed shows your posts first-hand and accepted friends in the same
-                  timeline, ordered by the latest activity.
-                </p>
+      <section className="mx-auto w-full max-w-[860px]">
+        <div className="space-y-4 md:space-y-5">
+            {posts.length === 0 ? (
+              <div className="overflow-hidden rounded-[1.8rem] border border-white/8 bg-[linear-gradient(180deg,rgba(13,19,30,0.98),rgba(10,15,24,0.98))] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+                <div className="empty-state rounded-[1.2rem] p-6 text-sm leading-7 text-[var(--text-muted)]">
+                  No posts are visible yet. Share your first update or add friends to see their
+                  posts here.
+                </div>
               </div>
-              <div className="flex items-center gap-2 self-start rounded-full border border-[rgba(247,188,85,0.18)] bg-[rgba(247,188,85,0.08)] px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-[#ffd18a]">
-                <span className="inline-block h-2 w-2 rounded-full bg-[var(--accent-yellow)]" />
-                Friends-only feed
-              </div>
-            </div>
-          </div>
+            ) : (
+              posts.map((post, index) => {
+                const isOwnPost = post.authorId === session.user.id;
 
-          <div className="grid gap-3 px-5 py-4 sm:grid-cols-3 md:px-6">
-            <div className="rounded-[1.15rem] border border-white/7 bg-white/[0.03] px-4 py-3">
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                Visible posts
-              </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-white">{posts.length}</p>
-            </div>
-            <div className="rounded-[1.15rem] border border-white/7 bg-white/[0.03] px-4 py-3">
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                Friends in feed
-              </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-white">
-                {acceptedFriendCount}
-              </p>
-            </div>
-            <div className="rounded-[1.15rem] border border-white/7 bg-white/[0.03] px-4 py-3">
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                Feed scope
-              </p>
-              <p className="mt-2 text-base font-semibold tracking-tight text-white">
-                You + accepted friends
-              </p>
-            </div>
-          </div>
-        </div>
+                return (
+                  <article
+                    key={post.id}
+                    className="relative overflow-hidden rounded-[1.8rem] border border-white/8 bg-[linear-gradient(180deg,rgba(13,20,32,0.98),rgba(10,15,24,0.98))] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.16)] md:p-5"
+                  >
+                    <div
+                      className={`absolute top-0 left-0 h-full w-1.5 ${
+                        isOwnPost ? "bg-[var(--accent-yellow)]" : "bg-[var(--accent-blue)]"
+                      }`}
+                    />
 
-        {posts.length === 0 ? (
-          <div className="feed-card rounded-[1.35rem] p-6">
-            <div className="empty-state rounded-[1rem] p-6 text-sm leading-7 text-[var(--text-muted)]">
-              No posts are visible yet. Share your first update or add friends to see their posts
-              here.
-            </div>
-          </div>
-        ) : (
-          posts.map((post) => {
-            const isOwnPost = post.authorId === session.user.id;
-            const audienceLabel = isOwnPost ? "Your post" : "Friend update";
-
-            return (
-              <article
-                key={post.id}
-                className="overflow-hidden rounded-[1.45rem] border border-white/8 bg-[linear-gradient(180deg,rgba(14,20,31,0.98),rgba(11,16,25,0.98))] shadow-[0_14px_36px_rgba(0,0,0,0.18)]"
-              >
-                <div className="border-b border-white/7 px-4 py-4 md:px-5">
-                  <div className="flex items-start gap-3">
-                    <div className="avatar-chip mt-0.5 shrink-0">{getInitials(post.author.name)}</div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
-                          <p className="truncate text-[0.98rem] font-semibold text-white">
-                            {post.author.name}
-                          </p>
-                          <p className="truncate text-xs text-[var(--text-muted)]">
-                            {post.author.email}
-                          </p>
+                    <div className="pl-3 md:pl-4">
+                      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                        <div className="flex items-start gap-3">
+                          <div className="avatar-chip mt-0.5 shrink-0">{getInitials(post.author.name)}</div>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-base font-semibold text-white">{post.author.name}</p>
+                              <span
+                                className={`inline-flex rounded-full px-2.5 py-1 text-[0.66rem] font-semibold uppercase tracking-[0.14em] ${
+                                  isOwnPost
+                                    ? "bg-[rgba(247,188,85,0.14)] text-[#ffd18a]"
+                                    : "bg-[rgba(104,173,255,0.14)] text-[#bddcff]"
+                                }`}
+                              >
+                                {isOwnPost ? "You" : "Friend"}
+                              </span>
+                              {index === 0 ? (
+                                <span className="inline-flex rounded-full bg-[rgba(87,215,162,0.14)] px-2.5 py-1 text-[0.66rem] font-semibold uppercase tracking-[0.14em] text-[#9ceec8]">
+                                  Latest
+                                </span>
+                              ) : null}
+                            </div>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">{post.author.email}</p>
+                          </div>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                          <span
-                            className={`inline-flex items-center rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] ${
-                              isOwnPost
-                                ? "bg-[rgba(247,188,85,0.12)] text-[#ffd18a]"
-                                : "bg-[rgba(104,173,255,0.14)] text-[#b9d9ff]"
-                            }`}
-                          >
-                            {audienceLabel}
-                          </span>
-                          <span className="text-[11px] leading-5 text-[var(--text-muted)]">
-                            {formatPostDate(post.createdAt)}
-                          </span>
+
+                        <div className="text-left md:text-right">
+                          <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                            Posted
+                          </p>
+                          <p className="mt-1 text-sm text-white">{formatPostDate(post.createdAt)}</p>
                         </div>
                       </div>
+
+                      <div className="mt-4 rounded-[1.35rem] bg-white/[0.03] p-4 md:p-5">
+                        {post.content ? (
+                          <p className="whitespace-pre-wrap text-[0.97rem] leading-7 text-[#e6edf8]">
+                            {post.content}
+                          </p>
+                        ) : (
+                          <p className="text-sm uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                            Photo post
+                          </p>
+                        )}
+                      </div>
+
+                      {post.imageUrl ? (
+                        <div className="mt-4">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={post.imageUrl}
+                            alt={`Post by ${post.author.name}`}
+                            className="max-h-[44rem] w-full rounded-[1.35rem] border border-white/7 object-cover"
+                          />
+                        </div>
+                      ) : null}
+
+                      {isOwnPost ? (
+                        <div className="mt-4 flex justify-end">
+                          <DeletePostButton postId={post.id} />
+                        </div>
+                      ) : null}
                     </div>
-                  </div>
-                </div>
-
-                {post.imageUrl ? (
-                  <div className="px-4 pt-4 md:px-5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={post.imageUrl}
-                      alt={`Post by ${post.author.name}`}
-                      className="max-h-[42rem] w-full rounded-[1.1rem] border border-white/7 object-cover"
-                    />
-                  </div>
-                ) : null}
-
-                <div className="px-4 py-4 md:px-5 md:py-5">
-                  {post.content ? (
-                    <p className="whitespace-pre-wrap text-[0.95rem] leading-7 text-[#e6edf8]">
-                      <span className="mr-2 font-semibold text-white">{post.author.name}</span>
-                      {post.content}
-                    </p>
-                  ) : (
-                    <p className="text-sm text-[var(--text-muted)]">Shared a photo.</p>
-                  )}
-
-                  <div className="mt-4 flex justify-end">
-                    {isOwnPost ? <DeletePostButton postId={post.id} /> : null}
-                  </div>
-                </div>
-              </article>
-            );
-          })
-        )}
+                  </article>
+                );
+              })
+            )}
+        </div>
       </section>
     </AppShell>
   );
