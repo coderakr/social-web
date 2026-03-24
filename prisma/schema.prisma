@@ -27,6 +27,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   posts         Post[]
+  comments      Comment[]
   sentRequests  Friendship[] @relation("FriendshipRequester")
   receivedRequests Friendship[] @relation("FriendshipAddressee")
 
@@ -40,9 +41,24 @@ model Post {
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   content   String
   imageUrl  String?
+  comments  Comment[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([authorId, createdAt(sort: Desc)])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId, createdAt])
   @@index([authorId, createdAt(sort: Desc)])
 }
 

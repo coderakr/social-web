@@ -1,28 +1,14 @@
 import { AppShell } from "@/components/app-shell";
+import { CommentsSection } from "@/components/comments-section";
 import { DeletePostButton } from "@/components/delete-post-button";
+import { getVisibleAuthorIds } from "@/lib/post-visibility";
 import prisma from "@/lib/prisma";
 import { formatPostDate, getInitials } from "@/lib/social";
 import { requireServerSession } from "@/lib/session";
 
 export default async function HomePage() {
   const session = await requireServerSession();
-  const friendships = await prisma.friendship.findMany({
-    where: {
-      status: "ACCEPTED",
-      OR: [{ requesterId: session.user.id }, { addresseeId: session.user.id }],
-    },
-    select: {
-      requesterId: true,
-      addresseeId: true,
-    },
-  });
-
-  const visibleAuthorIds = [
-    session.user.id,
-    ...friendships.map((friendship) =>
-      friendship.requesterId === session.user.id ? friendship.addresseeId : friendship.requesterId,
-    ),
-  ];
+  const visibleAuthorIds = await getVisibleAuthorIds(session.user.id);
 
   const posts = await prisma.post.findMany({
     where: {
@@ -36,6 +22,20 @@ export default async function HomePage() {
           id: true,
           name: true,
           email: true,
+        },
+      },
+      comments: {
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "asc",
         },
       },
     },
@@ -136,6 +136,14 @@ export default async function HomePage() {
                           <DeletePostButton postId={post.id} />
                         </div>
                       ) : null}
+
+                      <div className="mt-5">
+                        <CommentsSection
+                          postId={post.id}
+                          currentUserId={session.user.id}
+                          comments={post.comments}
+                        />
+                      </div>
                     </div>
                   </article>
                 );
