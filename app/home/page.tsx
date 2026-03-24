@@ -131,17 +131,12 @@ export default async function HomePage() {
                         </div>
                       ) : null}
 
-                      {isOwnPost ? (
-                        <div className="mt-4 flex justify-end">
-                          <DeletePostButton postId={post.id} />
-                        </div>
-                      ) : null}
-
-                      <div className="mt-5">
+                      <div className="mt-4">
                         <CommentsSection
                           postId={post.id}
                           currentUserId={session.user.id}
                           comments={post.comments}
+                          action={isOwnPost ? <DeletePostButton postId={post.id} /> : null}
                         />
                       </div>
                     </div>

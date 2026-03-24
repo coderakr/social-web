@@ -24,12 +24,14 @@ type CommentsSectionProps = {
   postId: string;
   currentUserId: string;
   comments: CommentItem[];
+  action?: React.ReactNode;
 };
 
 export function CommentsSection({
   postId,
   currentUserId,
   comments,
+  action,
 }: CommentsSectionProps) {
   const router = useRouter();
   const { startLoading } = usePageLoading();
@@ -81,29 +83,32 @@ export function CommentsSection({
 
   return (
     <section>
-      <button
-        type="button"
-        onClick={() => setIsOpen((current) => !current)}
-        className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.03] px-3 py-2 text-sm text-[var(--text-muted)] transition-colors hover:text-white"
-      >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 24 24"
-          className="h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => setIsOpen((current) => !current)}
+          className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.03] px-3 py-2 text-sm text-[var(--text-muted)] transition-colors hover:text-white"
         >
-          <path d="M21 12a8.5 8.5 0 0 1-8.5 8.5H7l-4 3V12A8.5 8.5 0 0 1 11.5 3.5h1A8.5 8.5 0 0 1 21 12Z" />
-        </svg>
-        <span>{comments.length}</span>
-        <span>{comments.length === 1 ? "Comment" : "Comments"}</span>
-      </button>
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 12a8.5 8.5 0 0 1-8.5 8.5H7l-4 3V12A8.5 8.5 0 0 1 11.5 3.5h1A8.5 8.5 0 0 1 21 12Z" />
+          </svg>
+          <span>{comments.length}</span>
+          <span>{comments.length === 1 ? "Comment" : "Comments"}</span>
+        </button>
+        {action}
+      </div>
 
       {isOpen ? (
-        <div className="mt-4 rounded-[1.35rem] border border-white/7 bg-[rgba(255,255,255,0.025)] p-4 md:p-5">
+        <div className="mt-3 rounded-[1.35rem] border border-white/7 bg-[rgba(255,255,255,0.025)] p-4 md:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[var(--accent-blue)]">
