@@ -4,7 +4,7 @@ import { LoadingSpinner } from "@/components/loading-spinner";
 import { usePageLoading } from "@/components/page-loading-provider";
 import { formatPostDate, getInitials } from "@/lib/social";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type CommentAuthor = {
   id: string;
@@ -23,22 +23,71 @@ type CommentItem = {
 type CommentsSectionProps = {
   postId: string;
   currentUserId: string;
-  comments: CommentItem[];
+  initialCommentCount: number;
   action?: React.ReactNode;
 };
 
 export function CommentsSection({
   postId,
   currentUserId,
-  comments,
+  initialCommentCount,
   action,
 }: CommentsSectionProps) {
   const router = useRouter();
   const { startLoading } = usePageLoading();
   const [isOpen, setIsOpen] = useState(false);
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [commentCount, setCommentCount] = useState(initialCommentCount);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadComments() {
+      if (!isOpen || comments.length > 0 || isLoadingComments) {
+        return;
+      }
+
+      setIsLoadingComments(true);
+
+      try {
+        const response = await fetch(`/api/posts/${postId}/comments`, {
+          method: "GET",
+          cache: "no-store",
+        });
+        const json = (await response.json()) as {
+          error?: string;
+          comments?: CommentItem[];
+        };
+
+        if (!response.ok) {
+          throw new Error(json.error || "Unable to load comments.");
+        }
+
+        if (!isCancelled) {
+          setComments(json.comments ?? []);
+          setCommentCount(json.comments?.length ?? 0);
+        }
+      } catch (loadError) {
+        if (!isCancelled) {
+          setError(loadError instanceof Error ? loadError.message : "Unable to load comments.");
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoadingComments(false);
+        }
+      }
+    }
+
+    void loadComments();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [comments.length, isLoadingComments, isOpen, postId]);
 
   async function handleSubmit() {
     const trimmedContent = content.trim();
@@ -70,6 +119,21 @@ export function CommentsSection({
       }
 
       setContent("");
+      setCommentCount((current) => current + 1);
+      setComments((current) => [
+        ...current,
+        {
+          id: `temp-${Date.now()}`,
+          content: trimmedContent,
+          createdAt: new Date().toISOString(),
+          authorId: currentUserId,
+          author: {
+            id: currentUserId,
+            name: "You",
+            email: "",
+          },
+        },
+      ]);
       router.refresh();
     } catch (submitError) {
       setError(
@@ -101,8 +165,8 @@ export function CommentsSection({
           >
             <path d="M21 12a8.5 8.5 0 0 1-8.5 8.5H7l-4 3V12A8.5 8.5 0 0 1 11.5 3.5h1A8.5 8.5 0 0 1 21 12Z" />
           </svg>
-          <span>{comments.length}</span>
-          <span>{comments.length === 1 ? "Comment" : "Comments"}</span>
+          <span>{commentCount}</span>
+          <span>{commentCount === 1 ? "Comment" : "Comments"}</span>
         </button>
         {action}
       </div>
@@ -115,13 +179,17 @@ export function CommentsSection({
                 Comments
               </p>
               <p className="mt-1 text-sm text-[var(--text-muted)]">
-                {comments.length} {comments.length === 1 ? "reply" : "replies"}
+                {commentCount} {commentCount === 1 ? "reply" : "replies"}
               </p>
             </div>
           </div>
 
           <div className="mt-4 space-y-3">
-            {comments.length === 0 ? (
+            {isLoadingComments ? (
+              <div className="rounded-[1rem] border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-[var(--text-muted)]">
+                Loading comments...
+              </div>
+            ) : comments.length === 0 ? (
               <div className="rounded-[1rem] border border-dashed border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-[var(--text-muted)]">
                 No comments yet.
               </div>

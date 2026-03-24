@@ -8,16 +8,74 @@ type RouteContext = {
   }>;
 };
 
-export async function POST(request: Request, context: RouteContext) {
+async function getAuthorizedPost(request: Request, context: RouteContext) {
   const session = await auth.api.getSession({
     headers: request.headers,
   });
 
   if (!session?.user) {
-    return Response.json({ error: "Unauthorized." }, { status: 401 });
+    return { error: Response.json({ error: "Unauthorized." }, { status: 401 }) };
   }
 
   const { postId } = await context.params;
+  const post = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+    select: {
+      id: true,
+      authorId: true,
+    },
+  });
+
+  if (!post) {
+    return { error: Response.json({ error: "Post not found." }, { status: 404 }) };
+  }
+
+  const canViewPost = await canUserViewAuthorPosts(session.user.id, post.authorId);
+
+  if (!canViewPost) {
+    return { error: Response.json({ error: "Forbidden." }, { status: 403 }) };
+  }
+
+  return { session, post };
+}
+
+export async function GET(request: Request, context: RouteContext) {
+  const result = await getAuthorizedPost(request, context);
+
+  if ("error" in result) {
+    return result.error;
+  }
+
+  const comments = await prisma.comment.findMany({
+    where: {
+      postId: result.post.id,
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+
+  return Response.json({ comments });
+}
+
+export async function POST(request: Request, context: RouteContext) {
+  const result = await getAuthorizedPost(request, context);
+
+  if ("error" in result) {
+    return result.error;
+  }
+
   const body = (await request.json()) as {
     content?: string;
   };
@@ -34,30 +92,10 @@ export async function POST(request: Request, context: RouteContext) {
     );
   }
 
-  const post = await prisma.post.findUnique({
-    where: {
-      id: postId,
-    },
-    select: {
-      id: true,
-      authorId: true,
-    },
-  });
-
-  if (!post) {
-    return Response.json({ error: "Post not found." }, { status: 404 });
-  }
-
-  const canViewPost = await canUserViewAuthorPosts(session.user.id, post.authorId);
-
-  if (!canViewPost) {
-    return Response.json({ error: "Forbidden." }, { status: 403 });
-  }
-
   await prisma.comment.create({
     data: {
-      postId: post.id,
-      authorId: session.user.id,
+      postId: result.post.id,
+      authorId: result.session.user.id,
       content,
     },
   });

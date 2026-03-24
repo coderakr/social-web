@@ -25,18 +25,9 @@ export default async function HomePage() {
           email: true,
         },
       },
-      comments: {
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "asc",
+      _count: {
+        select: {
+          comments: true,
         },
       },
     },
@@ -148,7 +139,7 @@ export default async function HomePage() {
                         <CommentsSection
                           postId={post.id}
                           currentUserId={session.user.id}
-                          comments={post.comments}
+                          initialCommentCount={post._count.comments}
                           action={isOwnPost ? <DeletePostButton postId={post.id} /> : null}
                         />
                       </div>
