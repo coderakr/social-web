@@ -20,11 +20,11 @@ export async function POST(request: Request, context: RouteContext) {
 
   const { postId } = await context.params;
   const body = (await request.json()) as {
-    kind?: ReactionKind;
+    kind?: ReactionKind | null;
   };
   const kind = body.kind;
 
-  if (kind !== ReactionKind.LIKE && kind !== ReactionKind.DISLIKE) {
+  if (kind !== null && kind !== ReactionKind.LIKE && kind !== ReactionKind.DISLIKE) {
     return Response.json({ error: "Invalid reaction." }, { status: 400 });
   }
 
@@ -62,20 +62,22 @@ export async function POST(request: Request, context: RouteContext) {
   });
 
   if (!existingReaction) {
-    await prisma.postReaction.create({
-      data: {
-        postId: post.id,
-        authorId: session.user.id,
-        kind,
-      },
-    });
-  } else if (existingReaction.kind === kind) {
+    if (kind) {
+      await prisma.postReaction.create({
+        data: {
+          postId: post.id,
+          authorId: session.user.id,
+          kind,
+        },
+      });
+    }
+  } else if (kind === null) {
     await prisma.postReaction.delete({
       where: {
         id: existingReaction.id,
       },
     });
-  } else {
+  } else if (existingReaction.kind !== kind) {
     await prisma.postReaction.update({
       where: {
         id: existingReaction.id,

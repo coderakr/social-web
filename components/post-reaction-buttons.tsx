@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRef } from "react";
 import { useState } from "react";
 
 type ReactionKind = "LIKE" | "DISLIKE";
@@ -18,25 +18,20 @@ export function PostReactionButtons({
   initialDislikes,
   initialReaction,
 }: PostReactionButtonsProps) {
-  const router = useRouter();
   const [likes, setLikes] = useState(initialLikes);
   const [dislikes, setDislikes] = useState(initialDislikes);
   const [currentReaction, setCurrentReaction] = useState<ReactionKind | null>(initialReaction);
-  const [pendingKind, setPendingKind] = useState<ReactionKind | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const mutationIdRef = useRef(0);
 
   async function handleReaction(nextKind: ReactionKind) {
-    if (pendingKind) {
-      return;
-    }
-
     const previousReaction = currentReaction;
     const previousLikes = likes;
     const previousDislikes = dislikes;
     const nextReaction = previousReaction === nextKind ? null : nextKind;
+    const mutationId = ++mutationIdRef.current;
 
     setError(null);
-    setPendingKind(nextKind);
 
     if (previousReaction === "LIKE") {
       setLikes((current) => current - 1);
@@ -63,7 +58,7 @@ export function PostReactionButtons({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          kind: nextKind,
+          kind: nextReaction,
         }),
       });
 
@@ -72,21 +67,17 @@ export function PostReactionButtons({
       if (!response.ok) {
         throw new Error(json.error || "Unable to update reaction.");
       }
-
-      router.refresh();
     } catch (reactionError) {
-      setCurrentReaction(previousReaction);
-      setLikes(previousLikes);
-      setDislikes(previousDislikes);
-      setError(
-        reactionError instanceof Error ? reactionError.message : "Something went wrong.",
-      );
-    } finally {
-      setPendingKind(null);
+      if (mutationId === mutationIdRef.current) {
+        setCurrentReaction(previousReaction);
+        setLikes(previousLikes);
+        setDislikes(previousDislikes);
+        setError(
+          reactionError instanceof Error ? reactionError.message : "Something went wrong.",
+        );
+      }
     }
   }
-
-  const isBusy = pendingKind !== null;
 
   return (
     <div className="flex flex-col items-end gap-2">
@@ -99,7 +90,6 @@ export function PostReactionButtons({
               ? "border-[rgba(87,215,162,0.26)] bg-[rgba(87,215,162,0.12)] text-[#9ceec8]"
               : "border-white/8 bg-white/[0.03] text-[var(--text-muted)] hover:text-white"
           }`}
-          disabled={isBusy}
         >
           <span aria-hidden="true">👍</span>
           <span>{likes}</span>
@@ -112,7 +102,6 @@ export function PostReactionButtons({
               ? "border-[rgba(255,110,123,0.26)] bg-[rgba(255,110,123,0.12)] text-[#ffb1b9]"
               : "border-white/8 bg-white/[0.03] text-[var(--text-muted)] hover:text-white"
           }`}
-          disabled={isBusy}
         >
           <span aria-hidden="true">👎</span>
           <span>{dislikes}</span>
