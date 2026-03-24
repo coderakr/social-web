@@ -1,7 +1,5 @@
 "use client";
 
-import { LoadingSpinner } from "@/components/loading-spinner";
-import { usePageLoading } from "@/components/page-loading-provider";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -21,7 +19,6 @@ export function PostReactionButtons({
   initialReaction,
 }: PostReactionButtonsProps) {
   const router = useRouter();
-  const { startLoading } = usePageLoading();
   const [likes, setLikes] = useState(initialLikes);
   const [dislikes, setDislikes] = useState(initialDislikes);
   const [currentReaction, setCurrentReaction] = useState<ReactionKind | null>(initialReaction);
@@ -59,10 +56,6 @@ export function PostReactionButtons({
 
     setCurrentReaction(nextReaction);
 
-    const stopLoading = startLoading(
-      nextKind === "LIKE" ? "Updating like..." : "Updating dislike...",
-    );
-
     try {
       const response = await fetch(`/api/posts/${postId}/reaction`, {
         method: "POST",
@@ -89,7 +82,6 @@ export function PostReactionButtons({
         reactionError instanceof Error ? reactionError.message : "Something went wrong.",
       );
     } finally {
-      stopLoading();
       setPendingKind(null);
     }
   }
@@ -109,7 +101,7 @@ export function PostReactionButtons({
           }`}
           disabled={isBusy}
         >
-          {pendingKind === "LIKE" ? <LoadingSpinner size="sm" /> : <span aria-hidden="true">👍</span>}
+          <span aria-hidden="true">👍</span>
           <span>{likes}</span>
         </button>
         <button
@@ -122,7 +114,7 @@ export function PostReactionButtons({
           }`}
           disabled={isBusy}
         >
-          {pendingKind === "DISLIKE" ? <LoadingSpinner size="sm" /> : <span aria-hidden="true">👎</span>}
+          <span aria-hidden="true">👎</span>
           <span>{dislikes}</span>
         </button>
       </div>
