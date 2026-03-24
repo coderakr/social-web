@@ -129,10 +129,20 @@ export function AppShell({
             </LoadingLink>
             <button
               type="button"
-              className="rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2 text-sm text-white lg:hidden"
+              aria-label="Close sidebar"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/8 bg-white/[0.03] text-white lg:hidden"
               onClick={closeSidebar}
             >
-              Close
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              >
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
             </button>
           </div>
 
