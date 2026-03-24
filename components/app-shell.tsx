@@ -144,15 +144,6 @@ export function AppShell({
                 <p className="truncate text-sm text-[var(--accent-blue)]">{user.email}</p>
               </div>
             </div>
-
-            <LoadingLink
-              href="/create"
-              className="app-button app-button-primary mt-4 w-full rounded-[1rem]"
-              onClick={closeSidebar}
-              loadingMessage="Opening create post..."
-            >
-              New post
-            </LoadingLink>
           </div>
 
           <div className="mt-5 px-1">
